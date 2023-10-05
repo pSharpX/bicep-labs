@@ -1,0 +1,98 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.21.1.54444",
+      "templateHash": "14736694434712616391"
+    }
+  },
+  "parameters": {
+    "fruits": {
+      "type": "array",
+      "defaultValue": [
+        "orange",
+        "apple",
+        "banana",
+        "pinaple",
+        "watermelon"
+      ],
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "ages": {
+      "type": "array",
+      "defaultValue": [
+        85,
+        20,
+        5,
+        18,
+        30
+      ],
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "devEngineers": {
+      "type": "array",
+      "defaultValue": [
+        "Christian",
+        "Gian",
+        "Jhonny",
+        "Rodrich",
+        "Marcel",
+        "Wesley"
+      ]
+    },
+    "cloudEngineers": {
+      "type": "array",
+      "defaultValue": [
+        "Javier",
+        "Carlos",
+        "Christian"
+      ]
+    },
+    "platformEngineers": {
+      "type": "array",
+      "defaultValue": [
+        "Kathir",
+        "Prakash",
+        "Syed",
+        "Santiago"
+      ]
+    },
+    "engineers": {
+      "type": "array",
+      "items": {
+        "type": "array"
+      },
+      "defaultValue": [
+        "[parameters('devEngineers')]",
+        "[parameters('cloudEngineers')]",
+        "[parameters('platformEngineers')]"
+      ],
+      "metadata": {
+        "description": "Represents the groups of software engineers profesionals"
+      }
+    }
+  },
+  "variables": {
+    "isEmpty": "[empty(parameters('fruits'))]",
+    "firstElement": "[first(parameters('fruits'))]",
+    "lastElement": "[last(parameters('fruits'))]",
+    "allEngineers": "[flatten(parameters('engineers'))]",
+    "maxAge": "[max(parameters('ages'))]",
+    "minAge": "[min(parameters('ages'))]"
+  },
+  "resources": {},
+  "outputs": {
+    "containsOrange": {
+      "type": "bool",
+      "metadata": {
+        "description": "Check whether if specific item is found in array, object or collection"
+      },
+      "value": "[contains(parameters('fruits'), 'orange')]"
+    }
+  }
+}
