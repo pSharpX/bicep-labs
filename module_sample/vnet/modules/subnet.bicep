@@ -1,7 +1,5 @@
 
 @minLength(1)
-param virtualNetworkId string
-@minLength(1)
 param virtualNetworkName string
 @minLength(3)
 param subnetName string

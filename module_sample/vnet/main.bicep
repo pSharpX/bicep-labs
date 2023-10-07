@@ -37,8 +37,7 @@ module defaultSubnet 'modules/subnet.bicep' = {
   params: {
     subnetName: subnetName
     subnetAddressPrefix:subnetAddressPrefix
-    virtualNetworkId: virtualNetwork.outputs.virtualNetworkId
-    virtualNetworkName: vNetName
+    virtualNetworkName: virtualNetwork.outputs.virtualNetworkName
   }
 }
 
