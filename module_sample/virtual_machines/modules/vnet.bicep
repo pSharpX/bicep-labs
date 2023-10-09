@@ -3,10 +3,9 @@
 param location string = resourceGroup().location
 
 @description('Name of the Virtual Network')
-param virtualNetworkName string = 'vNet'
-
+param virtualNetworkName string
 @description('Name of the subnet in the virtual network')
-param subnetName string = 'Subnet'
+param subnetName string
 
 var subnetAddressPrefix = '10.1.0.0/24'
 var addressPrefix = '10.1.0.0/16'
@@ -36,4 +35,6 @@ resource subnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' = {
 }
 
 output virtualNetworkId string = virtualNetwork.id
+output virtualNetworkName string = virtualNetwork.name
 output subnetId string = subnet.id
+output subnetName string = subnet.name

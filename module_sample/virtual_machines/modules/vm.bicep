@@ -1,6 +1,7 @@
 
 @description('Location for all resources')
 param location string = resourceGroup().location
+
 @description('Additional metadata')
 param tags object
 
@@ -8,6 +9,10 @@ param tags object
 @maxLength(24)
 @description('The name of the virtual machine')
 param vmName string
+
+@minLength(3)
+@description('Hostname for the virtual machine')
+param computerName string
 
 @minLength(3)
 @description('Username for the virtual machine')
@@ -56,6 +61,8 @@ param publicIPAddressId string
 
 @description('Security Group Identifier')
 param networkSecurityGroupId string
+@description('A name for the Network Interface Controller')
+param networkInterfaceName string
 
 var imageReference = {
   'Ubuntu-1804': {
@@ -78,7 +85,6 @@ var imageReference = {
   }
 }
 
-var networkInterfaceName = '${vmName}NetInt'
 var osDiskType = 'Standard_LRS'
 
 var linuxConfiguration = {
@@ -157,7 +163,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-07-01' = {
     }
 
     osProfile: {
-      computerName: vmName
+      computerName: computerName
       adminUsername: adminUserName
       adminPassword: adminPasswordOrKey
       linuxConfiguration: ((authenticationType == 'password') ? null : linuxConfiguration)
@@ -167,5 +173,6 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-07-01' = {
   }
 }
 
+output virtualMachineId string = virtualMachine.id
+output networkInterfaceId string = networkInterface.id
 output adminUserName string = adminUserName
-

@@ -3,7 +3,7 @@
 param location string = resourceGroup().location
 
 @description('Name of the security group')
-param networkSecurityGroupName string = 'SecGroupName'
+param networkSecurityGroupName string
 
 resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2023-05-01' = {
   name: networkSecurityGroupName
@@ -12,9 +12,9 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2023-05-0
   properties: {
     securityRules: [
       {
-        name: 'SSH'
+        name: 'Allow-SSH'
         properties: {
-          priority: 1000
+          priority: 100
           protocol: 'Tcp'
           access: 'Allow'
           direction: 'Inbound'
@@ -22,6 +22,32 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2023-05-0
           sourcePortRange: '*'
           destinationAddressPrefix: '*'
           destinationPortRange: '22'
+        }
+      }
+      {
+        name: 'Allow-HTTP'
+        properties: {
+          priority: 200
+          protocol: 'Tcp'
+          access: 'Allow'
+          direction: 'Inbound'
+          sourceAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationAddressPrefix: '*'
+          destinationPortRange: '80'
+        }
+      }
+      {
+        name: 'Allow-HTTPS'
+        properties: {
+          priority: 300
+          protocol: 'Tcp'
+          access: 'Allow'
+          direction: 'Inbound'
+          sourceAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationAddressPrefix: '*'
+          destinationPortRange: '443'
         }
       }
     ]

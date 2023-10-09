@@ -13,6 +13,7 @@ param provisioner string
 
 param location string = resourceGroup().location
 param vmName string
+param computerName string
 @allowed([
   'Ubuntu-1804'
   'Ubuntu-2004'
@@ -33,11 +34,12 @@ param adminPasswordOrKey string
 param virtualNetworkName string
 param subnetName string
 param networkSecurityGroupName string
+param networkInterfaceName string
 param publicIpAddressName string
 param dnsLabelPrefix string
 
 module securityGroup 'modules/sgroup.bicep' = {
-  name: 'securityGroup'
+  name: 'defaultSecurityGroup'
   params: {
     networkSecurityGroupName: networkSecurityGroupName
     location: location    
@@ -45,7 +47,7 @@ module securityGroup 'modules/sgroup.bicep' = {
 }
 
 module publicIPAddress 'modules/ip.bicep' = {
-  name: 'publicIpAddress'
+  name: 'defaultPublicIpAddress'
   params: {
     publicIPAddressName: publicIpAddressName
     location: location
@@ -54,7 +56,7 @@ module publicIPAddress 'modules/ip.bicep' = {
 }
 
 module virtualNetwork 'modules/vnet.bicep' = {
-  name: 'virtualNetwork'
+  name: 'defaultVirtualNetwork'
   params: {
     virtualNetworkName: virtualNetworkName
     location: location
@@ -65,7 +67,8 @@ module virtualNetwork 'modules/vnet.bicep' = {
 module virtualMachine 'modules/vm.bicep' = {
   name: 'virtualMachine'
   params: {
-    vmName: replace(vmName, '_', '')
+    vmName: vmName
+    computerName: computerName
     location: location
     adminUserName: adminUser
     adminPasswordOrKey: adminPasswordOrKey
@@ -76,6 +79,7 @@ module virtualMachine 'modules/vm.bicep' = {
     publicIPAddressId: publicIPAddress.outputs.publicIPAddressId
     subNetId: virtualNetwork.outputs.subnetId
     networkSecurityGroupId: securityGroup.outputs.securityGroupId
+    networkInterfaceName: networkInterfaceName
     tags: {
       applicationId: applicationId
       environment: environment
@@ -87,4 +91,4 @@ module virtualMachine 'modules/vm.bicep' = {
 
 output adminUser string = adminUser
 output hostname string = publicIPAddress.outputs.hostname
-output sshCommand string = 'ssh ${adminUser}@${publicIPAddress.outputs.hostname}'
+output sshCommand string = 'ssh -i ./ssh/vm-keys ${adminUser}@${publicIPAddress.outputs.hostname}'
