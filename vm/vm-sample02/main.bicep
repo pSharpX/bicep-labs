@@ -1,23 +1,9 @@
 param location string = resourceGroup().location
-
-/** Metadata for resources */
 param provisioner string
 param owner string
 param applicationId string
 @allowed(['dev', 'test', 'uat', 'prod'])
 param environment string
-
-var tags = {
-  applicationId: applicationId
-  owner: owner
-  environment: environment
-  provisioner: provisioner
-}
-
-/** Virtual Machine required params */
-@minLength(3)
-@description('Name for the Virtual Machine')
-param vmName string
 @minValue(1)
 @maxValue(3)
 @description('Number of Virtual Machines to be created')
@@ -43,8 +29,7 @@ param adminUser string
 @secure()
 @description('SSH key for passwordless authentication')
 param sshKey string
-//@description('Custom Data for provisioning Virtual Machine on first boot')
-//param customData string
+
 
 var imageReference = {
   'Ubuntu-1804': {
@@ -61,74 +46,106 @@ var imageReference = {
   }
 }
 
-/** Security Group required params */
-@description('Security Group name for Inbound/Outbound traffic rules configuration')
-param securityGroupName string
-@description('Inbound Rules for security Group')
-param securityRules array = [
-  {
-    name: 'Allow-SSH-All'
-    priority: 100
-    protocol: 'Tcp'
-    access: 'Allow'
-    direction: 'Inbound'
-    destinationPortRange: '22'
-  }
-  {
-    name: 'Allow-WEB-HTTPS'
-    priority: 200
-    protocol: 'Tcp'
-    access: 'Allow'
-    direction: 'Inbound'
-    destinationPortRange: '443'
-  }
-  {
-    name: 'Allow-WEB-HTTP'
-    priority: 300
-    protocol: 'Tcp'
-    access: 'Allow'
-    direction: 'Inbound'
-    destinationPortRange: '80'
-  }
-]
-
-/** Public IP Address required params */
 @minLength(3)
-param publicIpAddressName string
+param securityGroupName string
+@minLength(3)
+param virtualNetworkName string
+@minLength(3)
+param defaultSubnetName string
 @minLength(3)
 param dnsLabelPrefix string
 
-/** Virtual Network required params */
-@description('Virtual Network name for the Virtual Machine')
-@minLength(3)
-param vNetName string
-@description('Name of the subnet in the virtual network')
-@minLength(3)
-param subnetName string
-param addressPrefix string = '10.1.0.0/16'
-param subnetAddressPrefix string = '10.1.0.0/24'
+var configurations = [for index in range(0, vmCount): {
+  vMachineName: '${applicationId}_${uniqueString(resourceGroup().id, string(index))}_vm'
+  hostname: '${applicationId}Machine${string(index)}'
+  sshPublicKeyName: '${applicationId}_${uniqueString(resourceGroup().id, string(index))}_pk'
+  publicIpName: '${applicationId}_${uniqueString(resourceGroup().id, string(index))}_pip'
+  domainNameLabel: '${dnsLabelPrefix}${uniqueString(resourceGroup().id, string(index))}'
+  nicName: '${applicationId}_${uniqueString(resourceGroup().id, string(index))}_nic'
+}]
 
-/** Network Interface required params */
-param networkInterfaceName string
-
-resource networkInterface 'Microsoft.Network/networkInterfaces@2023-05-01' existing = {
-  name: networkInterfaceName
-}
-
-resource sshPublicKey 'Microsoft.Compute/sshPublicKeys@2023-07-01' = {
-  name: '${vmName}PublicKey'
+resource networkInterfaces 'Microsoft.Network/networkInterfaces@2021-05-01' = [for (config, i) in configurations: {
+  name: config.nicName
   location: location
-  tags: tags
+  tags: {
+    owner: owner
+    applicationId: applicationId
+    environment: environment
+    provisioner: provisioner
+  }
+
+  properties: {
+    networkSecurityGroup: {
+      id: resourceId('Microsoft.Network/networkSecurityGroups', securityGroupName)
+    }
+
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          subnet: {
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, defaultSubnetName)
+          }
+          privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress: {
+            id: resourceId('Microsoft.Network/publicIPAddresses', '${config.publicIpName}')
+          }
+        }
+      }
+    ]
+  }
+
+  dependsOn: [
+    pips
+  ]
+}]
+
+resource pips 'Microsoft.Network/publicIPAddresses@2021-05-01' = [for config in configurations: {
+  name: config.publicIpName
+  location: location
+  tags: {
+    owner: owner
+    applicationId: applicationId
+    environment: environment
+    provisioner: provisioner
+  }
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Dynamic'
+    dnsSettings: {
+      domainNameLabel: config.domainNameLabel
+    }
+    idleTimeoutInMinutes: 4
+  }
+}]
+
+resource sshPublicKey 'Microsoft.Compute/sshPublicKeys@2023-07-01' = [for config in configurations: {
+  name: config.sshPublicKeyName
+  location: location
+  tags: {
+    applicationId: applicationId
+    owner: owner
+    environment: environment
+    provisioner: provisioner
+  }
 
   properties: {
     publicKey: sshKey
   }
-}
+}]
 
-resource virtualMachines 'Microsoft.Compute/virtualMachines@2023-07-01' = [for vm in range(1, vmCount): {
-  name: uniqueString(resourceGroup().id, string(vm))
+resource virtualMachines 'Microsoft.Compute/virtualMachines@2023-07-01' = [for (config, i) in configurations: {
+  name: config.vMachineName
   location: location
-  tags: tags
+  tags: {
+    applicationId: applicationId
+    owner: owner
+    environment: environment
+    provisioner: provisioner
+  }
 
   properties: {
     hardwareProfile: {
@@ -136,7 +153,7 @@ resource virtualMachines 'Microsoft.Compute/virtualMachines@2023-07-01' = [for v
     }
 
     osProfile: {
-      computerName: '${vmName}${string(vm)}'
+      computerName: config.hostname
       adminUsername: adminUser
       linuxConfiguration: {
         disablePasswordAuthentication: true
@@ -144,7 +161,7 @@ resource virtualMachines 'Microsoft.Compute/virtualMachines@2023-07-01' = [for v
           publicKeys: [
             {
               path: '/home/${adminUser}/.ssh/authorized_keys'
-              keyData: sshPublicKey.properties.publicKey
+              keyData: sshPublicKey[i].properties.publicKey
             }
           ]
         }
@@ -165,9 +182,18 @@ resource virtualMachines 'Microsoft.Compute/virtualMachines@2023-07-01' = [for v
     networkProfile: {
       networkInterfaces: [
         {
-          id: networkInterface.id
+          id: networkInterfaces[i].id
         }
       ]
     }
   }
+
+  dependsOn: [
+    networkInterfaces[i]
+  ]
 }]
+
+output vMachines array = [for config in configurations: config.vMachineName]
+output nics array = [for config in configurations: config.nicName]
+output pIpAddresses array = [for config in configurations: config.publicIpName]
+output fqdns array = [for (config, i) in configurations: pips[i].properties.dnsSettings.fqdn]
