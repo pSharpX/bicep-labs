@@ -25,7 +25,7 @@ param resourceNamePrefix string
 param fileName string
 @description('Content of the blob as it is stored in the blob container')
 param fileContent string
-
+param baseTime string = utcNow('u')
 
 var storageAccountName = '${resourceNamePrefix}${uniqueString(resourceGroup().id, environment)}sa'
 var containerName = 'installation-scripts'
@@ -95,7 +95,6 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   }
 }
 
-param baseTime string = utcNow('u')
 var add1Hour = dateTimeAdd(baseTime, 'PT1H')
 var serviceSASConfig = {
   canonicalizedResource: '/blob/${storageAccount.name}/${container.name}/${fileName}'
@@ -105,16 +104,10 @@ var serviceSASConfig = {
   signedProtocol: 'https'
 }
 
-var accountSASConfig = {
-  signedExpiry: add1Hour
-  signedPermission: 'rl'
-  signedResourceTypes: 'sco'
-  signedServices: 'b'
-  signedProtocol: 'https'
-}
+var serviceSASToken = storageAccount.listServiceSAS('2023-01-01', serviceSASConfig).serviceSasToken
 
 output storageAccountId string = storageAccount.id
 output blobEndpoint string = storageAccount.properties.primaryEndpoints.blob
 output containerId string = container.id
-output fileServiceSasToken string = storageAccount.listServiceSAS('2023-01-01', serviceSASConfig).serviceSasToken
-output fileUrl string = '${storageAccount.properties.primaryEndpoints.blob}${container.name}/${fileName}?${storageAccount.listServiceSAS('2023-01-01', serviceSASConfig).serviceSasToken}'
+output fileServiceSasToken string = serviceSASToken
+output fileUrl string = '${storageAccount.properties.primaryEndpoints.blob}${container.name}/${fileName}?${serviceSASToken}'

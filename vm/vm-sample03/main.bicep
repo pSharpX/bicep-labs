@@ -228,10 +228,10 @@ resource virtualMachines 'Microsoft.Compute/virtualMachines@2023-07-01' = [for (
 }]
 
 var serviceSASConfig = {
-  canonicalizedResource: '/blob/${storageAccount.name}/installation-scripts/install_docker.sh'
+  canonicalizedResource: '/blob/${storageAccount.name}/installation-scripts'
   signedExpiry: add1Hour
-  signedPermission: 'rl'
-  signedResource: 'b'
+  signedPermission: 'r'
+  signedResource: 'c'
   signedProtocol: 'https'
 }
 var serviceSASToken = storageAccount.listServiceSas('2023-01-01', serviceSASConfig).serviceSasToken
