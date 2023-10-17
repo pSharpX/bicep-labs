@@ -267,5 +267,5 @@ resource vmCustomScript 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
   }
 }]
 
-output fqdns array = [for (config, i) in items(configs): pips[i].properties.dnsSettings.fqdn]
-output sshCommands array = [for (config, i) in items(configs): 'ssh -i ./ssh/vm-keys ${adminUser}@${pips[i].properties.dnsSettings.fqdn}']
+output fqdns array = [for (config, i) in items(configs): (config.value.create) ? pips[i].properties.dnsSettings.fqdn: 'ALREADY_EXIST']
+output sshCommands array = [for (config, i) in items(configs): (config.value.create) ? 'ssh -i ./ssh/vm-keys ${adminUser}@${pips[i].properties.dnsSettings.fqdn}': 'ALREADY_EXIST']
