@@ -23,6 +23,9 @@ param useExistingConfigStore bool
 @maxLength(100)
 param keyValues array
 
+var SLASH_CHAR = '/'
+var ESCAPED_SLASH_CHAR = '~2F'
+
 @description('Adds tags for the key-value resources. It\'s optional')
 param tags object = {
   'technical-owner': 'TeamGOAT'
@@ -30,7 +33,7 @@ param tags object = {
 }
 
 var parameters = map(keyValues, item => {
-  name: '${item.name}$${environment}'
+  name: '${replace(item.name, SLASH_CHAR, ESCAPED_SLASH_CHAR)}$${environment}'
   value: item.value
   tags: contains(item, 'tags') ? item.tags: tags
 })
