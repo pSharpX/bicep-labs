@@ -42,6 +42,7 @@ resource sfitKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
   properties: {
     tenantId: subscription().tenantId
     enableRbacAuthorization: false
+    enabledForTemplateDeployment: true
     sku: {
        name: 'standard'
        family: 'A'

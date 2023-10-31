@@ -68,6 +68,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
   properties: {
     tenantId: subscription().tenantId
     enableRbacAuthorization: true
+    enabledForTemplateDeployment: true
     sku: {
        name: 'standard'
        family: 'A'
