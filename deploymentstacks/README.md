@@ -17,6 +17,11 @@ To create a deployment stack at the subscription scope:
 ```bash
 az stack sub create --name '<deployment-stack-name>' --location '<location>' --template-file '<bicep-file-name>' --deployment-resource-group' <resource-group-name>' --action-on-unmanage 'detachAll' --deny-settings-mode 'none'
 ```
+The `deployment-resource-group` parameter specifies the resource group used to store the managed resources. If you don't specify the parameter, the managed resources are stored in the subscription scope.
+
+```bash
+az stack sub create --name 'onebankDefaultDeploymentStack' --location 'eastus' --template-file 'main.bicep' --action-on-unmanage 'deleteAll' --deny-settings-mode 'none' --parameters .bicepparam
+```
 
 ### Verify the deployment
 
@@ -67,7 +72,14 @@ To delete the deployment stack, but retain the managed resources:
 ```bash
 az stack group delete --name 'demoStack' --resource-group 'demoRg' --action-on-unmanage 'detachAll'
 ```
+
+```bash
+az stack sub delete --name '<deployment-stack-name>' --action-on-unmanage '<deleteAll/deleteResources/detachAll>'
+az stack sub delete --name 'demoStack' --action-on-unmanage 'deleteAll'
+```
+
 The delete command exclusively removes managed resources and managed resource groups. You're still responsible for deleting the resource groups that aren't managed by the deployment stack.
+
 
 
 ### Subscription-Level Deployment of a Bicep Template
