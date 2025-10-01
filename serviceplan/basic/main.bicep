@@ -8,7 +8,7 @@ param resourceGroupName string
 
 @minLength(3)
 @maxLength(34)
-@description('Must contains alpanumric chararacters and dash')
+@description('Must contains alpanumric characters and dash')
 param resourceName string
 
 @allowed([
@@ -23,7 +23,7 @@ param environment string = 'dev'
 
 @minLength(3)
 @maxLength(20)
-@description('It represents the owner of the application. Must contains alpanumric chararacters and dash')
+@description('It represents the owner of the application. Must contains alpanumric characters and dash')
 param applicationId string = 'onebank'
 
 @allowed([
@@ -36,7 +36,7 @@ param provisioner string = 'bicep'
 
 @minLength(3)
 @maxLength(20)
-@description('It represents the owner of the application. Must contains alpanumric chararacters and dash')
+@description('It represents the owner of the application. Must contains alpanumric characters and dash')
 param owner string = 'TeamDragons'
 
 var tags = {
