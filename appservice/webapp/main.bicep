@@ -52,7 +52,7 @@ param provisioner string = 'bicep'
 @description('It represents the owner of the application. Must contains alpanumric chararacters and dash')
 param owner string = 'TeamDragons'
 
-var tags = {
+var tags object = {
   application: applicationId
   environment: environment
   owner: owner
@@ -92,7 +92,6 @@ module defaultLinuxAppService 'modules/appservice.bicep' = {
   scope:onebankRG
   params:{
     resourceName: linuxAppServiceName
-    isLinux: true
     kind: 'app,linux'
     appSettings: [
       {
@@ -101,8 +100,7 @@ module defaultLinuxAppService 'modules/appservice.bicep' = {
       }
     ]
     servicePlanId: defaultLinuxServicePlan.outputs.servicePlanId
-    runtime: 'JAVA:11-java11'
-    tags:tags
+    runtime: 'JAVA|21-java21'
   }
 }
 
@@ -121,7 +119,6 @@ module defaultWindowsAppService 'modules/appservice.bicep' = {
     ]
     servicePlanId: defaultWindowsServicePlan.outputs.servicePlanId
     javaVersion: '11'
-    tags:tags
   }
 }
 

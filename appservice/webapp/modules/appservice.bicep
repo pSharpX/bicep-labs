@@ -1,7 +1,8 @@
 
 @minLength(3)
 param location string = resourceGroup().location
-param tags object = {}
+@description('Tags to apply to the resources. Must be key-value pairs.')
+param customTags object = {}
 
 @minLength(1)
 @maxLength(34)
@@ -45,6 +46,7 @@ param isLinux bool = true
   'PYTHON:3.10'
   'PYTHON:3.9'
   'JAVA:17-java17'
+  'JAVA|21-java21'
   'JAVA:21-java21'
   'JAVA:11-java11'
   'JAVA:8-jre8'
@@ -89,10 +91,16 @@ var allowedNodeVersions array = ['16-lts', '20-lts']
 var allowedPythonVersions array = ['3.9', '3.11']
 
 
-resource defaultLinuxAppService 'Microsoft.Web/sites@2024-11-01' = if (isLinux) {
+resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = if (isLinux) {
   name: resourceName
   location: location
   kind: contains(linuxKinds, kind) ? kind: fail('Invalid kind for linux apps')
+  tags: {
+    application: 'onebank'
+    environment: 'dev'
+    owner: 'TeamDragons'
+    provisioner: 'bicep'
+  }
   properties: {
     serverFarmId: servicePlanId
     siteConfig: {
@@ -108,10 +116,16 @@ resource defaultLinuxAppService 'Microsoft.Web/sites@2024-11-01' = if (isLinux) 
   }
 }
 
-resource defaultWindowsAppService 'Microsoft.Web/sites@2024-11-01' = if (!isLinux) {
+resource defaultWindowsAppService 'Microsoft.Web/sites@2024-04-01' = if (!isLinux) {
   name: resourceName
   location: location
   kind: contains(windowsKinds, kind) ? kind: fail('Invalid kind for windows apps')
+  tags: {
+    application: 'onebank'
+    environment: 'dev'
+    owner: 'TeamDragons'
+    provisioner: 'bicep'
+  }
   properties: {
     serverFarmId: servicePlanId
     siteConfig: {
