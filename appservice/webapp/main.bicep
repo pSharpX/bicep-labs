@@ -1,4 +1,6 @@
 
+import { appConfigListType } from 'types.bicep'
+
 targetScope = 'subscription'
 
 @minLength(3)
@@ -30,6 +32,10 @@ param windowsAppServiceName string
   'centralus'
 ])
 param location string = 'eastus'
+
+
+@description('It represent the number of apps will be provisioned. Must contain server information and app details')
+param apps appConfigListType = []
 
 @allowed([ 'dev', 'test', 'stagging', 'prod'])
 param environment string = 'dev'
@@ -91,7 +97,7 @@ module defaultLinuxAppService 'modules/appservice.bicep' = {
   name:'defaultLinuxAppService'
   scope:onebankRG
   params:{
-    resourceName: linuxAppServiceName
+    appName: linuxAppServiceName
     kind: 'app,linux'
     appSettings: [
       {
@@ -100,7 +106,7 @@ module defaultLinuxAppService 'modules/appservice.bicep' = {
       }
     ]
     servicePlanId: defaultLinuxServicePlan.outputs.servicePlanId
-    runtime: 'JAVA|21-java21'
+    runtime: 'JAVA|11-java11'
   }
 }
 
@@ -108,7 +114,7 @@ module defaultWindowsAppService 'modules/appservice.bicep' = {
   name:'defaultWindowsAppService'
   scope:onebankRG
   params:{
-    resourceName: windowsAppServiceName
+    appName: windowsAppServiceName
     isLinux: false
     kind: 'app'
     appSettings: [
@@ -118,9 +124,42 @@ module defaultWindowsAppService 'modules/appservice.bicep' = {
       }
     ]
     servicePlanId: defaultWindowsServicePlan.outputs.servicePlanId
-    javaVersion: '11'
+    netFrameworkVersion: 'v4.8'
   }
 }
+
+module onebankServicePlans 'modules/serviceplan.bicep' = [for (app, i) in apps: {
+  name: 'deployment-asp-${app.appName}-${i}-${environment}'
+  scope: onebankRG
+  params: {
+    resourceName: 'asp-${app.appName}-${environment}-${i}'
+    skuName: app.skuName
+    kind: app.serverKind
+    tags:tags
+  }
+}]
+
+module onebankAppServices 'modules/appservice.bicep' = [for (app, i) in apps: {
+  name: 'deployment-web-${app.appName}-${i}-${environment}'
+  scope:onebankRG
+  params: {
+    appName: 'web-${app.appName}-${i}-${environment}'
+    isLinux: app.isLinux
+    kind: app.appKind
+    appSettings: app.appSettings
+    servicePlanId: onebankServicePlans[i].outputs.servicePlanId
+    runtime: app.customProperties.?runtime
+    netFrameworkVersion: app.customProperties.?netFrameworkVersion
+    javaVersion: app.customProperties.?javaVersion
+    pythonVersion: app.customProperties.?pythonVersion
+    nodeVersion: app.customProperties.?nodeVersion
+    phpVersion: app.customProperties.?phpVersion
+  }
+
+  dependsOn: [
+    onebankServicePlans
+  ]
+}]
 
 output resourceGroupId string = onebankRG.id
 output linuxAppServiceId string = defaultLinuxAppService.outputs.appServiceId
