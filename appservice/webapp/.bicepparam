@@ -5,8 +5,9 @@ param linuxAppServiceName = 'web-linux-onebank-app-dev'
 param windowsAppServiceName = 'web-windows-onebank-app-dev'
 param linuxServicePlan = 'asp-linux-onebank-app-dev'
 param windowsServicePlan = 'asp-windows-onebank-app-dev'
+param sku = 'B1'
 
-param location = 'centralus'
+param location = 'westus3'
 
 param environment = 'dev'
 param applicationId = 'onebank'
@@ -19,32 +20,31 @@ param apps = [
     appKind: 'app,linux'
     appSettings: [{name: 'ENV', value: 'DEVELOPMENT'}]
     serverKind: 'app,linux'
-    skuName: 'F1'
+    skuName: sku
     isLinux: true
     customProperties: {
-      runtime: 'DOTNETCORE|8.0'
+      runtime: 'TOMCAT|10.1-java21'
     }
   }
   {
     appName: 'onebank-bookstore'
     appKind: 'app,linux'
-    appSettings: [{name: 'ENV', value: 'DEVELOPMENT'}]
+    appSettings: [
+      { name: 'ENV', value: 'DEVELOPMENT'}
+      { name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'true' }
+      { name: 'DATABASE_USER', value: 'admin'}
+      { name: 'DATABASE_PASSWORD', value: 'admin'}
+    ]
     serverKind: 'app,linux'
-    skuName: 'F1'
+    skuName: sku
     isLinux: true
+    startupCommand: 'cd fastapi-bookstore && pip install -r requirements.txt && uvicorn books:app --port=3000'
     customProperties: {
-      runtime: 'JAVA|8-jre8'
+      runtime: 'PYTHON|3.12'
     }
-  }
-  {
-    appName: 'onebank-bookstore'
-    appKind: 'app,linux'
-    appSettings: [{name: 'ENV', value: 'DEVELOPMENT'}]
-    serverKind: 'app,linux'
-    skuName: 'F1'
-    isLinux: true
-    customProperties: {
-      runtime: 'PHP|8.2'
+    sourceControl: {
+      repoUrl: 'https://github.com/pSharpX/python-labs.git'
+      branch: 'main'
     }
   }
 ]

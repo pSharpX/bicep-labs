@@ -10,7 +10,7 @@ param tags object = {}
 param resourceName string
 param kind servicePlanKindType = 'app'
 
-@description('The list of SKUs that can be specified for App Services Plan.')
+@description('Instance size')
 param skuName servicePlanSkuType = 'B2'
 
 resource defaultServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {

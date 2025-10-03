@@ -1,5 +1,5 @@
 
-import { appConfigListType } from 'types.bicep'
+import { appConfigListType, locationType, servicePlanSkuType } from 'types.bicep'
 
 targetScope = 'subscription'
 
@@ -17,6 +17,8 @@ param linuxServicePlan string
 @description('Must be 1-34 chars, only letters/numbers/hyphen, cannot start/end with hyphen.')
 param windowsServicePlan string
 
+param sku servicePlanSkuType 
+
 @minLength(1)
 @maxLength(34)
 @description('Must be 1-34 chars, start with a letter, only contain lowercase letters/numbers/hyphens, and end with a letter/number.')
@@ -26,12 +28,7 @@ param linuxAppServiceName string
 @description('Must be 1-34 chars, start with a letter, only contain lowercase letters/numbers/hyphens, and end with a letter/number.')
 param windowsAppServiceName string
 
-@allowed([
-  'eastus'
-  'westeurope'
-  'centralus'
-])
-param location string = 'eastus'
+param location locationType = 'eastus'
 
 
 @description('It represent the number of apps will be provisioned. Must contain server information and app details')
@@ -76,7 +73,7 @@ module defaultLinuxServicePlan 'modules/serviceplan.bicep' = {
   scope:onebankRG
   params:{
     resourceName:linuxServicePlan
-    skuName: 'F1'
+    skuName: sku
     kind: 'app,linux'
     tags:tags
   }
@@ -87,7 +84,7 @@ module defaultWindowsServicePlan 'modules/serviceplan.bicep' = {
   scope:onebankRG
   params:{
     resourceName:windowsServicePlan
-    skuName: 'F1'
+    skuName: sku
     kind: 'app'
     tags:tags
   }
@@ -124,7 +121,7 @@ module defaultWindowsAppService 'modules/appservice.bicep' = {
       }
     ]
     servicePlanId: defaultWindowsServicePlan.outputs.servicePlanId
-    netFrameworkVersion: 'v4.8'
+    netFrameworkVersion: 'v3.5'
   }
 }
 
@@ -144,6 +141,9 @@ module onebankAppServices 'modules/appservice.bicep' = [for (app, i) in apps: {
   scope:onebankRG
   params: {
     appName: 'web-${app.appName}-${i}-${environment}'
+    repoUrl: app.?sourceControl.?repoUrl
+    branch: app.?sourceControl.?branch
+    startupCommand: app.?startupCommand
     isLinux: app.isLinux
     kind: app.appKind
     appSettings: app.appSettings

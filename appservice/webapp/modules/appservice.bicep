@@ -33,6 +33,13 @@ param javaVersion javaVersionType | '' = ''
 param nodeVersion nodeVersionType | '' = ''
 param pythonVersion pythonVersionType | '' = ''
 
+@description('App command line to launch')
+param startupCommand string = ''
+@description('Repository or source control URL')
+param repoUrl string = ''
+@description('Name of branch to use for deployment')
+param branch string = 'main'
+
 var linuxKinds array = [ 
   'app,linux'
 ]
@@ -55,6 +62,8 @@ resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = if (isLinux) 
     serverFarmId: servicePlanId
     siteConfig: {
       linuxFxVersion: contains(linuxKinds, kind) ? runtime: fail('Invalid kind for linux apps')
+      appCommandLine: !empty(startupCommand)? startupCommand: null
+      scmType: !empty(repoUrl) ? 'ExternalGit': null
       appSettings: appSettings
       healthCheckPath: !empty(healthCheckPath) ? healthCheckPath : null
       minTlsVersion: '1.2'
@@ -63,6 +72,15 @@ resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = if (isLinux) 
       }
     }
     httpsOnly: true
+  }
+
+  resource sourceControl 'sourcecontrols@2024-11-01' =  if (!empty(repoUrl)) {
+    name: appName
+    properties: {
+      repoUrl: repoUrl
+      branch: branch
+      isManualIntegration: true
+    }
   }
 }
 
@@ -79,6 +97,8 @@ resource defaultWindowsAppService 'Microsoft.Web/sites@2024-04-01' = if (!isLinu
   properties: {
     serverFarmId: servicePlanId
     siteConfig: {
+      appCommandLine: !empty(startupCommand)? startupCommand: null
+      scmType: !empty(repoUrl) ? 'ExternalGit': null
       appSettings: appSettings
       healthCheckPath: !empty(healthCheckPath) ? healthCheckPath : null
       minTlsVersion: '1.2'
@@ -94,6 +114,15 @@ resource defaultWindowsAppService 'Microsoft.Web/sites@2024-04-01' = if (!isLinu
       }: {})
     }
     httpsOnly: true
+  }
+
+  resource sourceControl 'sourcecontrols@2024-11-01' = if (!empty(repoUrl)){
+    name: appName
+    properties: {
+      repoUrl: repoUrl
+      branch: branch
+      isManualIntegration: true
+    }
   }
 }
 
