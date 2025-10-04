@@ -144,6 +144,7 @@ module onebankAppServices 'modules/appservice.bicep' = [for (app, i) in apps: {
     repoUrl: app.?sourceControl.?repoUrl
     branch: app.?sourceControl.?branch
     startupCommand: app.?startupCommand
+    healthCheckPath: app.?healthCheckPath
     isLinux: app.isLinux
     kind: app.appKind
     appSettings: app.appSettings

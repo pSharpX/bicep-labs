@@ -63,7 +63,6 @@ resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = if (isLinux) 
     siteConfig: {
       linuxFxVersion: contains(linuxKinds, kind) ? runtime: fail('Invalid kind for linux apps')
       appCommandLine: !empty(startupCommand)? startupCommand: null
-      scmType: !empty(repoUrl) ? 'ExternalGit': null
       appSettings: appSettings
       healthCheckPath: !empty(healthCheckPath) ? healthCheckPath : null
       minTlsVersion: '1.2'
@@ -75,7 +74,7 @@ resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = if (isLinux) 
   }
 
   resource sourceControl 'sourcecontrols@2024-11-01' =  if (!empty(repoUrl)) {
-    name: appName
+    name: 'web'
     properties: {
       repoUrl: repoUrl
       branch: branch
@@ -98,7 +97,6 @@ resource defaultWindowsAppService 'Microsoft.Web/sites@2024-04-01' = if (!isLinu
     serverFarmId: servicePlanId
     siteConfig: {
       appCommandLine: !empty(startupCommand)? startupCommand: null
-      scmType: !empty(repoUrl) ? 'ExternalGit': null
       appSettings: appSettings
       healthCheckPath: !empty(healthCheckPath) ? healthCheckPath : null
       minTlsVersion: '1.2'
@@ -117,7 +115,7 @@ resource defaultWindowsAppService 'Microsoft.Web/sites@2024-04-01' = if (!isLinu
   }
 
   resource sourceControl 'sourcecontrols@2024-11-01' = if (!empty(repoUrl)){
-    name: appName
+    name: 'web'
     properties: {
       repoUrl: repoUrl
       branch: branch

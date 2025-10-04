@@ -17,13 +17,24 @@ param provisioner = 'bicep'
 param apps = [
   {
     appName: 'onebank-bookstore'
-    appKind: 'app,linux'
-    appSettings: [{name: 'ENV', value: 'DEVELOPMENT'}]
-    serverKind: 'app,linux'
-    skuName: sku
-    isLinux: true
+    appKind: 'app'
+    appSettings: [
+      { name: 'ENV', value: 'DEVELOPMENT'}
+      { name: 'DATABASE_USER', value: 'admin'}
+      { name: 'DATABASE_PASSWORD', value: 'admin'}
+      { name: 'WEBSITES_PORT', value: '8000'}
+    ]
+    serverKind: 'app'
+    skuName: 'B3'
+    isLinux: false
+    startupCommand: 'cd fastapi-bookstore && pip install -r requirements.txt && uvicorn books:app'
+    healthCheckPath: '/'
     customProperties: {
-      runtime: 'TOMCAT|10.1-java21'
+      pythonVersion: '3.11'
+    }
+    sourceControl: {
+      repoUrl: 'https://github.com/pSharpX/python-labs'
+      branch: 'main'
     }
   }
   {
@@ -31,19 +42,20 @@ param apps = [
     appKind: 'app,linux'
     appSettings: [
       { name: 'ENV', value: 'DEVELOPMENT'}
-      { name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'true' }
       { name: 'DATABASE_USER', value: 'admin'}
       { name: 'DATABASE_PASSWORD', value: 'admin'}
+      { name: 'WEBSITES_PORT', value: '8000'}
     ]
     serverKind: 'app,linux'
-    skuName: sku
+    skuName: 'B3'
     isLinux: true
-    startupCommand: 'cd fastapi-bookstore && pip install -r requirements.txt && uvicorn books:app --port=3000'
+    startupCommand: 'cd fastapi-bookstore && pip install -r requirements.txt && uvicorn books:app'
+    healthCheckPath: '/'
     customProperties: {
       runtime: 'PYTHON|3.12'
     }
     sourceControl: {
-      repoUrl: 'https://github.com/pSharpX/python-labs.git'
+      repoUrl: 'https://github.com/pSharpX/python-labs'
       branch: 'main'
     }
   }
