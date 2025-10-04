@@ -17,7 +17,10 @@ type appConfigType = {
   isLinux: bool
   @description('The list of app settings')
   appSettings: appSettingType[]
+  @description('App command line to launch')
   startupCommand: string?
+  @description('Health check path')
+  healthCheckPath: string?
   @description('Additional custom properties for app service')
   customProperties: customPropertiesType
   @description('Custom properties for source control')
