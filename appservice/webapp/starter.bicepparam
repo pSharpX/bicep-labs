@@ -21,10 +21,9 @@ param apps = [
     skuName: sku
     isLinux: true
     customProperties: {
-      runtime: 'JAVA|21-java21'
+      runtime: 'DOTNETCORE|10.0'
     }
   }
-
   {
     appName: 'onebank-bookstore'
     appKind: 'app,linux'
@@ -35,7 +34,7 @@ param apps = [
     skuName: sku
     isLinux: true
     customProperties: {
-      runtime: 'DOTNETCORE|10.0'
+      runtime: 'PHP|8.4'
     }
   }
   {
@@ -48,7 +47,7 @@ param apps = [
     skuName: sku
     isLinux: false
     customProperties: {
-      nodeVersion: '20-lts' 
+      nodeVersion: '~22'
     }
   }
   {
@@ -61,7 +60,7 @@ param apps = [
     skuName: sku
     isLinux: false
     customProperties: {
-      pythonVersion: '3.11'
+      netFrameworkVersion: 'v10.0'
     }
   }
 ]
