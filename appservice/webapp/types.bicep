@@ -41,15 +41,19 @@ type sourceControlType = {
 type customPropertiesType = {
   @description('Runtime only works for linux-based app service')
   runtime: linuxRuntimeType?
-  @description('Runtime only works for windows-based app service')
+  @description('netFrameworkVersion only works for windows-based app service')
   netFrameworkVersion: netFrameworkVersionType?
-  @description('Runtime only works for windows-based app service')
+  @description('phpVersion only works for windows-based app service (currently no longer supported)')
   phpVersion: phpVersionType?
-  @description('Runtime only works for windows-based app service')
+  @description('javaVersion only works for windows-based app service')
   javaVersion: javaVersionType?
-  @description('Runtime only works for windows-based app service')
+  @description('javaContainer only works for windows-based app service')
+  javaContainer: javaContainerType?
+  @description('javaContainerVersion only works for windows-based app service')
+  javaContainerVersion: javaContainerVersionType?
+  @description('nodeVersion only works for windows-based app service')
   nodeVersion: nodeVersionType?
-  @description('Runtime only works for windows-based app service')
+  @description('pythonVersion only works for windows-based app service (currently no longer supported)')
   pythonVersion: pythonVersionType?
 }
 
@@ -111,24 +115,30 @@ type linuxJavaRuntimeType = linuxJavaJDKRuntimeType | linuxJBossRuntimeType | li
 type linuxRuntimeType = linuxPhpRuntimeType | linuxJavaRuntimeType | linuxNodeRuntimeType | linuxPythonRuntimeType | linuxDotNetCoreRuntimeType
 
 @export()
-@description('Custom user-defined type for allowed version for NetFramework runtime')
-type netFrameworkVersionType = 'v4.8' | 'v3.5'
+@description('Custom user-defined type for allowed version for .NET runtime')
+type netFrameworkVersionType = 'v3.5' | 'v4.8' | 'v8.0' | 'v9.0' |'v10.0'
 
 @export()
-@description('Custom user-defined type for allowed version for Php runtime')
-type phpVersionType = '7.4' | '8.0'
+@description('Custom user-defined type for allowed version for PHP runtime. Using PHP on Windows App service is no longer supported (use Linux instead)')
+type phpVersionType = '5.6'
 
 @export()
 @description('Custom user-defined type for allowed versions of Java runtime')
-type javaVersionType = '1.8'| '11' | '17'
+type javaVersionType = '1.8'| '11' | '17' | '21'
+@export()
+@description('Custom user-defined type for allowed Java Container')
+type javaContainerType = 'TOMCAT'| 'JAVA'
+@export()
+@description('Custom user-defined type for allowed versions of Java Container')
+type javaContainerVersionType = '9.0' | '10.0' | '10.1' | '11.0' | 'SE'
 
 @export()
 @description('Custom user-defined type for allowed versions of Node runtime')
-type nodeVersionType = '16-lts' | '20-lts'
+type nodeVersionType = '~22' | '~20' | '~16'
 
 @export()
-@description('Custom user-defined type for allowed versions of Python runtime')
-type pythonVersionType = '3.9' | '3.11'
+@description('Custom user-defined type for allowed versions of Python runtime. Python support on Windows App service is officially deprecated (use Linux instead)')
+type pythonVersionType = '2.7'
 
 @export()
 @description('Custom user-defined type for app settings in App Service')

@@ -5,7 +5,7 @@ param linuxAppServiceName = 'web-linux-onebank-app-dev'
 param windowsAppServiceName = 'web-windows-onebank-app-dev'
 param linuxServicePlan = 'asp-linux-onebank-app-dev'
 param windowsServicePlan = 'asp-windows-onebank-app-dev'
-param sku = 'B1'
+param sku = 'F1'
 
 param location = 'westus3'
 

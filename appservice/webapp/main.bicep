@@ -99,7 +99,7 @@ module defaultLinuxAppService 'modules/appservice.bicep' = {
       }
     ]
     servicePlanId: defaultLinuxServicePlan.outputs.servicePlanId
-    runtime: 'JAVA|11-java11'
+    runtime: 'JAVA|21-java21'
   }
 }
 
@@ -117,7 +117,9 @@ module defaultWindowsAppService 'modules/appservice.bicep' = {
       }
     ]
     servicePlanId: defaultWindowsServicePlan.outputs.servicePlanId
-    netFrameworkVersion: 'v3.5'
+    javaVersion: '21'
+    javaContainer: 'TOMCAT'
+    javaContainerVersion: '11.0'
   }
 }
 

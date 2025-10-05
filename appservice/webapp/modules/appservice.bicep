@@ -4,6 +4,8 @@ import {
   netFrameworkVersionType
   phpVersionType
   javaVersionType
+  javaContainerType
+  javaContainerVersionType
   nodeVersionType
   pythonVersionType
  } from '../types.bicep'
@@ -30,6 +32,8 @@ param healthCheckPath string = ''
 param netFrameworkVersion netFrameworkVersionType | '' = ''
 param phpVersion phpVersionType | '' = ''
 param javaVersion javaVersionType | '' = ''
+param javaContainer javaContainerType | '' = ''
+param javaContainerVersion javaContainerVersionType | '' = ''
 param nodeVersion nodeVersionType | '' = ''
 param pythonVersion pythonVersionType | '' = ''
 
@@ -97,7 +101,11 @@ resource defaultWindowsAppService 'Microsoft.Web/sites@2024-04-01' = if (!isLinu
     serverFarmId: servicePlanId
     siteConfig: {
       appCommandLine: !empty(startupCommand)? startupCommand: null
-      appSettings: appSettings
+      appSettings: empty(nodeVersion) 
+        ? appSettings
+        : union([
+          { name: 'WEBSITE_NODE_DEFAULT_VERSION', value: nodeVersion }],
+          appSettings)
       healthCheckPath: !empty(healthCheckPath) ? healthCheckPath : null
       minTlsVersion: '1.2'
       cors: {
@@ -106,7 +114,9 @@ resource defaultWindowsAppService 'Microsoft.Web/sites@2024-04-01' = if (!isLinu
       ... (contains(windowsKinds, kind) ? {
         netFrameworkVersion: empty(netFrameworkVersion) ? null : netFrameworkVersion
         phpVersion: empty(phpVersion) ? null : phpVersion
-        javaVersion: empty(javaVersion) ? null : javaVersion 
+        javaVersion: empty(javaVersion) ? null : javaVersion
+        javaContainer: empty(javaContainer) ? null : javaContainer
+        javaContainerVersion: empty(javaContainerVersion) ? null : javaContainerVersion
         nodeVersion: empty(nodeVersion) ? null : nodeVersion
         pythonVersion: empty(pythonVersion) ? null : pythonVersion
       }: {})
