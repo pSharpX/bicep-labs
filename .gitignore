@@ -398,3 +398,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 **/ssh/
+
+# Ignore .bicepparam files to avoid credentials & secrets exposure
+**.bicepparam
