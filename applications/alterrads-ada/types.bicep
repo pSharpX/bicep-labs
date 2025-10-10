@@ -173,8 +173,20 @@ type deploymentConfigType = {
   @description('The list of deployment settings')
   appSettings: appSettingType[]
   @description('The command to execute')
-  command: string
+  command: string?
 }
 
 @export()
 type deploymentConfigListType = deploymentConfigType[]
+
+@export()
+@description('Custom user-defined type for Role Assignments')
+type roleAssignmentType = {
+  @description('The role resource scope')
+  resourceName: string
+  @description('The role definition ID')
+  roleId: string
+}
+
+@export()
+type roleAssignmentListType = roleAssignmentType[]

@@ -1,4 +1,5 @@
 import { appConfigType, locationType, envType, provisionerType, storageAccountNameType } from 'types.bicep'
+import { storageBlobDataContributor } from 'roles.bicep'
 
 targetScope = 'subscription'
 
@@ -15,6 +16,7 @@ param agentApp appConfigType
 @description('This represents all apps to be provisioned. Must contain server information and app details')
 param mcpServerApp appConfigType
 
+param managedIdentityName string
 param storageAccountName storageAccountNameType
 param containerName string
 param provisioner provisionerType
@@ -52,6 +54,25 @@ module defaultStorageAccount 'modules/storage.bicep' = {
     resourceName: storageAccountName
     tags: tags
   }
+}
+
+module defaultManagedIdentity 'modules/identity.bicep' = {
+  name: 'deployment-identity-${applicationId}-${environment}'
+  scope: defaultRG
+  params: {
+    location: location
+    identityName: managedIdentityName
+    storageRoleAssignments: [
+      {
+        resourceName: defaultStorageAccount.outputs.storageAccountName
+        roleId: storageBlobDataContributor
+      }
+    ]
+    tags: tags
+  }
+  dependsOn: [
+    defaultContainer
+  ]
 }
 
 module defaultContainer 'modules/container.bicep' = {
