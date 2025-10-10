@@ -401,3 +401,5 @@ FodyWeavers.xsd
 
 # Ignore .bicepparam files to avoid credentials & secrets exposure
 **.bicepparam
+
+**/db/
