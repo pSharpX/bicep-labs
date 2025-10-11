@@ -37,4 +37,5 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
 }
 
 output deploymentScriptId string = deploymentScript.id
+output outputText string = deploymentScript.properties.outputs.text
 output status object = deploymentScript.properties.status
