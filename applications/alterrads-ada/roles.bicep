@@ -1,6 +1,6 @@
 @export()
 @description('Grants full access to manage all resources, but does not allow you to assign roles in Azure RBAC, manage assignments in Azure Blueprints, or share image galleries')
-var contributor = resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24')
+var contributor = resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
 
 @export()
 @description('Grants full access to manage all resources, including the ability to assign roles in Azure RBAC')
