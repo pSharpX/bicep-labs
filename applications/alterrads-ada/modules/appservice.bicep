@@ -68,4 +68,5 @@ resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = {
 
 
 output appServiceId string = defaultLinuxAppService.id
-output appServiceUrl string = defaultLinuxAppService.?properties.hostNames[0]!
+output appServiceHostname string = defaultLinuxAppService.?properties.hostNames[0]!
+output appServiceUrl string = 'https://${defaultLinuxAppService.?properties.hostNames[0]!}'
