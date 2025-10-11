@@ -62,7 +62,7 @@ module defaultManagedIdentity 'modules/identity.bicep' = {
   params: {
     location: location
     identityName: managedIdentityName
-    storageRoleAssignments: [
+    storageScopeRoleAssignments: [
       {
         resourceName: defaultStorageAccount.outputs.storageAccountName
         roleId: storageBlobDataContributor
