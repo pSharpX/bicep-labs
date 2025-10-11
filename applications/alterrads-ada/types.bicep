@@ -139,8 +139,13 @@ type pythonVersionType = '2.7'
 type appSettingType = {
   name: string
   value: string?
-  secureValue: string?
+  secureValue: secureValueType?
 }
+
+@export()
+@secure()
+@description('Custom user-defined type for sensitive values')
+type secureValueType = string
 
 @export()
 @description('Required. Indicates the type of storage account')
@@ -191,3 +196,7 @@ type roleAssignmentType = {
 
 @export()
 type roleAssignmentListType = roleAssignmentType[]
+
+@export()
+@description('SKU name to specify whether the key vault is a standard vault or a premium vault')
+type keyVaultSkuTYpe = 'standard' | 'premium'
