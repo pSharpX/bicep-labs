@@ -35,3 +35,6 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       userAssignedIdentities: managedIdentities
     }: null)
 }
+
+output deploymentScriptId string = deploymentScript.id
+output status object = deploymentScript.properties.status

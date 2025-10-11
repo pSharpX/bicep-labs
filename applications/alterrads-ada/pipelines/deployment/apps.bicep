@@ -36,6 +36,16 @@ var tags object = {
   provisioner: provisioner
 }
 
+var botScriptContent = '''
+git clone $GITHUB_REPOSITORY_URL && \
+cd ada-bot && \
+git checkout -b $BRANCH_NAME && \
+zip -r app.zip . -x '.*' && \
+az storage blob upload -f app.zip -c data -n app.zip && \
+az webapp deploy --name $APP_SERVICE_NAME --resource-group $RESOURCE_GROUP_NAME --src-path app.zip
+'''
+
+
 resource defaultRG 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: resourceGroupName
 }
@@ -49,15 +59,6 @@ resource defaultAppService 'Microsoft.Web/sites@2024-11-01' existing = {
   scope: defaultRG
   name: appServiceName
 }
-
-var botScriptContent = '''
-git clone $GITHUB_REPOSITORY_URL && \
-cd ada-bot && \
-git checkout -b $BRANCH_NAME && \
-zip -r app.zip . -x '.*' && \
-az storage blob upload -f app.zip -c data -n app.zip && \
-az webapp deploy --name $APP_SERVICE_NAME --resource-group $RESOURCE_GROUP_NAME --src-path app.zip
-'''
 
 module defaultManagedIdentity '../../modules/identity.bicep' = {
   name: 'deployment-identity-${applicationId}-${environment}'
