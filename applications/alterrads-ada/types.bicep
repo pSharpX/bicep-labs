@@ -138,7 +138,8 @@ type pythonVersionType = '2.7'
 @description('Custom user-defined type for app settings in App Service')
 type appSettingType = {
   name: string
-  value: string
+  value: string?
+  secureValue: string?
 }
 
 @export()

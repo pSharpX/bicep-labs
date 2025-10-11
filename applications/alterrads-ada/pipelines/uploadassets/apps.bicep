@@ -63,7 +63,7 @@ module uploadAssetsDeploymentScript '../../modules/deploymentscript.bicep' = {
       }
       {
         name: 'AZURE_STORAGE_KEY'
-        value: defaultStorageAccount.listKeys().keys[0].value
+        secureValue: defaultStorageAccount.listKeys().keys[0].value
       }
     ])
     kind: uploadAssetsDeploymentConfig.kind
