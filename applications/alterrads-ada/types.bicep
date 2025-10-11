@@ -182,8 +182,8 @@ type deploymentConfigListType = deploymentConfigType[]
 @export()
 @description('Custom user-defined type for Role Assignments')
 type roleAssignmentType = {
-  @description('The role resource scope')
-  resourceName: string
+  @description('Role assignments apply at a specific scope, which defines the resource or set of resources to which you\'re granting access')
+  resourceName: string?
   @description('The role definition ID')
   roleId: string
 }
