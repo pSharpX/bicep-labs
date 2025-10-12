@@ -17,7 +17,7 @@ param softDeleteRetentionInDays int = 7
 param enableRbacAuthorization bool = true
 
 
-resource keyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
   name: keyVaultName
   location: location
   properties: {

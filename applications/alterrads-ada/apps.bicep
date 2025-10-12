@@ -1,5 +1,6 @@
-import { appConfigType, locationType, envType, provisionerType, storageAccountNameType } from 'types.bicep'
-import { storageBlobDataContributor } from 'roles.bicep'
+import { appConfigType, appSettingType, locationType, envType, provisionerType, storageAccountNameType } from 'types.bicep'
+import { storageBlobDataContributor, keyVaultSecretsOfficer } from 'roles.bicep'
+import { replaceUnderscore } from 'functions.bicep'
 
 targetScope = 'subscription'
 
@@ -9,6 +10,12 @@ targetScope = 'subscription'
 param resourceGroupName string
 param location locationType
 
+param managedIdentityName string
+param storageAccountName storageAccountNameType
+param containerName string
+param keyVaultName string
+param secrets appSettingType[] = []
+
 @description('This represents all apps to be provisioned. Must contain server information and app details')
 param botApp appConfigType
 @description('This represents all apps to be provisioned. Must contain server information and app details')
@@ -16,9 +23,6 @@ param agentApp appConfigType
 @description('This represents all apps to be provisioned. Must contain server information and app details')
 param mcpServerApp appConfigType
 
-param managedIdentityName string
-param storageAccountName storageAccountNameType
-param containerName string
 param provisioner provisionerType
 param environment envType = 'dev'
 
@@ -56,6 +60,20 @@ module defaultStorageAccount 'modules/storage.bicep' = {
   }
 }
 
+module defaultKeyVault 'modules/keyvault.bicep' = {
+  name: 'deployment-kv-${applicationId}-${environment}'
+  scope: defaultRG
+  params: {
+    location: location
+    keyVaultName: keyVaultName
+    enableRbacAuthorization: true
+    enableSoftDelete: true
+    keyVaultSku: 'standard'
+    softDeleteRetentionInDays: 7
+    tags: tags
+  }
+}
+
 module defaultManagedIdentity 'modules/identity.bicep' = {
   name: 'deployment-identity-${applicationId}-${environment}'
   scope: defaultRG
@@ -66,6 +84,12 @@ module defaultManagedIdentity 'modules/identity.bicep' = {
       {
         resourceName: defaultStorageAccount.outputs.storageAccountName
         roleId: storageBlobDataContributor
+      }
+    ]
+    keyVaultScopeRoleAssignments: [
+      {
+        resourceName: defaultKeyVault.outputs.keyVaultName
+        roleId: keyVaultSecretsOfficer
       }
     ]
     tags: tags
@@ -84,32 +108,48 @@ module defaultContainer 'modules/container.bicep' = {
   }
 }
 
-module botServicePlan 'modules/serviceplan.bicep' = {
-  name: 'deployment-asp-${botApp.appName}-${environment}'
+module applicationSecrets 'modules/secrets.bicep' = [for (secret, i) in secrets: {
+  name: 'deployment-kv-secret-${uniqueString(secret.name)}-${applicationId}-${environment}'
+  scope: defaultRG
+  params: {
+    keyVaultName: defaultKeyVault.outputs.keyVaultName
+    secretName: replaceUnderscore(secret.name)
+    secretValue: secret.secureValue!
+    tags: tags
+  }
+}]
+
+var applicationSecretsConfig = [for (secret, i) in secrets: { 
+  name: secret.name
+  value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${replaceUnderscore(secret.name)})'
+}]
+
+module mcpServerServicePlan 'modules/serviceplan.bicep' = {
+  name: 'deployment-asp-${mcpServerApp.appName}-${environment}'
   scope: defaultRG
   params: {
     location: location
-    resourceName: 'asp-${botApp.appName}-${environment}'
-    skuName: botApp.skuName
-    kind: botApp.serverKind
+    resourceName: 'asp-${mcpServerApp.appName}-${environment}'
+    skuName: mcpServerApp.skuName
+    kind: mcpServerApp.serverKind
     tags:tags
   }
 }
 
-module botAppService 'modules/appservice.bicep' = {
-  name: 'deployment-web-${botApp.appName}-${environment}'
+module mcpServerAppService 'modules/appservice.bicep' = {
+  name: 'deployment-web-${mcpServerApp.appName}-${environment}'
   scope:defaultRG
   params: {
     location: location
-    appName: 'web-${botApp.appName}-${environment}'
-    repoUrl: botApp.?sourceControl.?repoUrl
-    branch: botApp.?sourceControl.?branch
-    startupCommand: botApp.?startupCommand
-    healthCheckPath: botApp.?healthCheckPath
-    kind: botApp.appKind
-    appSettings: botApp.appSettings
-    servicePlanId: botServicePlan.outputs.servicePlanId
-    runtime: botApp.customProperties.?runtime
+    appName: 'web-${mcpServerApp.appName}-${environment}'
+    repoUrl: mcpServerApp.?sourceControl.?repoUrl
+    branch: mcpServerApp.?sourceControl.?branch
+    startupCommand: mcpServerApp.?startupCommand
+    healthCheckPath: mcpServerApp.?healthCheckPath
+    kind: mcpServerApp.appKind
+    appSettings: mcpServerApp.appSettings
+    servicePlanId: mcpServerServicePlan.outputs.servicePlanId
+    runtime: mcpServerApp.customProperties.?runtime
   }
 }
 
@@ -142,38 +182,50 @@ module agentAppService 'modules/appservice.bicep' = {
   }
 }
 
-module mcpServerServicePlan 'modules/serviceplan.bicep' = {
-  name: 'deployment-asp-${mcpServerApp.appName}-${environment}'
+module botServicePlan 'modules/serviceplan.bicep' = {
+  name: 'deployment-asp-${botApp.appName}-${environment}'
   scope: defaultRG
   params: {
     location: location
-    resourceName: 'asp-${mcpServerApp.appName}-${environment}'
-    skuName: mcpServerApp.skuName
-    kind: mcpServerApp.serverKind
+    resourceName: 'asp-${botApp.appName}-${environment}'
+    skuName: botApp.skuName
+    kind: botApp.serverKind
     tags:tags
   }
 }
 
-module mcpServerAppService 'modules/appservice.bicep' = {
-  name: 'deployment-web-${mcpServerApp.appName}-${environment}'
+module botAppService 'modules/appservice.bicep' = {
+  name: 'deployment-web-${botApp.appName}-${environment}'
   scope:defaultRG
   params: {
     location: location
-    appName: 'web-${mcpServerApp.appName}-${environment}'
-    repoUrl: mcpServerApp.?sourceControl.?repoUrl
-    branch: mcpServerApp.?sourceControl.?branch
-    startupCommand: mcpServerApp.?startupCommand
-    healthCheckPath: mcpServerApp.?healthCheckPath
-    kind: mcpServerApp.appKind
-    appSettings: mcpServerApp.appSettings
-    servicePlanId: mcpServerServicePlan.outputs.servicePlanId
-    runtime: mcpServerApp.customProperties.?runtime
+    appName: 'web-${botApp.appName}-${environment}'
+    repoUrl: botApp.?sourceControl.?repoUrl
+    branch: botApp.?sourceControl.?branch
+    startupCommand: botApp.?startupCommand
+    healthCheckPath: botApp.?healthCheckPath
+    kind: botApp.appKind
+    appSettings: union([
+      { name: 'MCP_INSURANCE_URL', value: '${mcpServerAppService.outputs.appServiceUrl}/insurance/mcp'}
+      { name: 'MCP_MEDICATIONS_URL', value: '${mcpServerAppService.outputs.appServiceUrl}/medis/mcp'}
+      { name: 'VISION_AGENT_URL', value: agentAppService.outputs.appServiceUrl}
+    ], applicationSecretsConfig, botApp.appSettings)
+    servicePlanId: botServicePlan.outputs.servicePlanId
+    runtime: botApp.customProperties.?runtime
+    managedIdentities: {
+      '${defaultManagedIdentity.outputs.identityId}': {}
+    }
   }
+
+  dependsOn: [
+    applicationSecrets
+  ]
 }
 
 
 output resourceGroupId string = defaultRG.id
 output storageEndpoint string = defaultStorageAccount.outputs.blobEndpoint
-output botUrl string = botAppService.outputs.appServiceUrl
-output agentUrl string = agentAppService.outputs.appServiceUrl
-output mcpServerUrl string = mcpServerAppService.outputs.appServiceUrl
+output keyVaultUri string = defaultKeyVault.outputs.keyVaulUri
+output mcpServerHostname string = mcpServerAppService.outputs.appServiceHostname
+output agentUrlHostname string = agentAppService.outputs.appServiceHostname
+output botUrlHostname string = botAppService.outputs.appServiceHostname

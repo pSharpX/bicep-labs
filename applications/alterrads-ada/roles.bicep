@@ -25,3 +25,7 @@ var acrPush = resourceId('Microsoft.Authorization/roleDefinitions', '8311e382-07
 @export()
 @description('Read secret contents. Only works for key vaults that use the "Azure RBAC" permission mode') 
 var keyVaultSecretsUser = resourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
+
+@export()
+@description('Perform any action on the secrets of a key vault, except manage permissions. Only works for key vaults that use the \'Azure role-based access control\' permission model') 
+var keyVaultSecretsOfficer = resourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')

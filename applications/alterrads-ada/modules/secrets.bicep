@@ -20,11 +20,11 @@ var add2Days = dateTimeAdd(nowUtc, 'P2D')
 var epoch = dateTimeToEpoch(add2Days)
 
 
-resource keyVault 'Microsoft.KeyVault/vaults@2025-05-01' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
   name: keyVaultName
 }
 
-resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2025-05-01' = {
+resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2024-11-01' = {
   name: secretName
   parent: keyVault
   properties: {

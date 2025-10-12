@@ -27,20 +27,21 @@ param repoUrl string = ''
 @description('Name of branch to use for deployment')
 param branch string = 'main'
 
+@description('Managed Identity attached to the Deployment Script container')
+param managedIdentities object = {}
+
 var linuxKinds array = [ 
   'app,linux'
 ]
 
-resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = {
+resource defaultLinuxAppService 'Microsoft.Web/sites@2024-11-01' = {
   name: appName
   location: location
   kind: contains(linuxKinds, kind) ? kind: fail('Invalid kind for linux apps')
-  tags: {
-    application: globalvars.application
-    environment: globalvars.environment
-    owner: globalvars.owner
-    provisioner: globalvars.provisioner
-  }
+  identity: (!empty(managedIdentities) ? {
+      type: 'UserAssigned'
+      userAssignedIdentities: managedIdentities
+    }: null)
   properties: {
     serverFarmId: servicePlanId
     siteConfig: {
@@ -54,6 +55,12 @@ resource defaultLinuxAppService 'Microsoft.Web/sites@2024-04-01' = {
       }
     }
     httpsOnly: true
+  }
+  tags: {
+    application: globalvars.application
+    environment: globalvars.environment
+    owner: globalvars.owner
+    provisioner: globalvars.provisioner
   }
 
   resource sourceControl 'sourcecontrols@2024-11-01' =  if (!empty(repoUrl)) {
