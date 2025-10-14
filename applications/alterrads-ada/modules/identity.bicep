@@ -37,7 +37,7 @@ resource storageScopeUserRoleAssignments 'Microsoft.Authorization/roleAssignment
   }
 }]
 
-resource keyVaultResources 'Microsoft.KeyVault/vaults@2025-05-01' existing = [for (roleAssignment, i) in keyVaultScopeRoleAssignments: {
+resource keyVaultResources 'Microsoft.KeyVault/vaults@2024-11-01' existing = [for (roleAssignment, i) in keyVaultScopeRoleAssignments: {
   name: roleAssignment.?resourceName!
 }]
 
