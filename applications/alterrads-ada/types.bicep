@@ -169,6 +169,27 @@ Storage account name restrictions:
 ''')
 type storageAccountNameType = string
 
+@export()
+@description('Required for storage accounts where kind = BlobStorage. The access tier is used for billing. The \'Premium\' access tier is the default value for premium block blobs storage account type and it cannot be changed for the premium block blobs storage account type.')
+type storageAccessTierType = 'Cool' | 'Hot' | 'Premium'
+
+@export()
+@description('Protocol settings for file service')
+type fileServiceProtocolType = 'smb' | 'nfs'
+
+@export()
+@description('Specifies whether data in the container may be accessed publicly and the level of access.')
+type containerPublicAccessLevelType =  'Blob' | 'Container' | 'None'
+
+@export()
+@description('Access tier for specific share. GpV2 account can choose between TransactionOptimized (default), Hot, and Cool. FileStorage account can choose Premium.')
+type fileShareAccessTierType =  'Cool' | 'Hot' | 'Premium' | 'TransactionOptimized'
+
+@export()
+@description('The provisioned size of the share, in gibibytes. Must be greater than 0, and less than or equal to 5TB (5120). For Large File Shares, the maximum size is 102400. For file shares created under Files Provisioned v2 account type, please refer to the GetFileServiceUsage API response for the minimum and maximum allowed provisioned storage size.')
+@minValue(1)
+@maxValue(5120)
+type fileShareQuota = int
 
 @export()
 @description('Custom user-defined type for Deployment Script Tasks')
