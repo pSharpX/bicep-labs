@@ -1,0 +1,34 @@
+using 'apps.bicep'
+
+param resourceGroupName = 'rg-alterra-ds-dev'
+param location = 'westus3'
+
+param environment = 'dev'
+param applicationId = 'alterra-ds'
+param owner = 'Alterra_DS'
+param provisioner = 'bicep'
+
+param apps = [
+  {
+    appName: 'ada-bot'
+    appKind: 'app,linux'
+    appSettings: [
+      { name: 'ENV', value: 'DEVELOPMENT'}
+      { name: 'DATABASE_USER', value: 'admin'}
+      { name: 'DATABASE_PASSWORD', value: 'admin'}
+      { name: 'WEBSITES_PORT', value: '3000'}
+    ]
+    serverKind: 'app,linux'
+    skuName: 'B3'
+    isLinux: true
+    startupCommand: 'python -m src.main'
+    healthCheckPath: '/'
+    customProperties: {
+      runtime: 'PYTHON|3.13'
+    }
+    sourceControl: {
+      repoUrl: 'https://github.com/Alterra-DS/ada-bot'
+      branch: 'main'
+    }
+  }
+]

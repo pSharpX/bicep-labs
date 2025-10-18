@@ -1,5 +1,5 @@
-import { deploymentConfigType, locationType, envType, provisionerType, storageAccountNameType } from '../../types.bicep'
-import { contributor } from '../../roles.bicep'
+import { deploymentConfigType, locationType, envType, provisionerType, storageAccountNameType } from '../../../types.bicep'
+import { contributor } from '../../../roles.bicep'
 
 targetScope = 'subscription'
 
@@ -12,6 +12,10 @@ param location locationType
 
 @description('The deployment configuration for scripts execution tasks')
 param botDeploymentConfig deploymentConfigType
+//@description('The deployment configuration for scripts execution tasks')
+//param agentDeploymentConfig deploymentConfigType
+//@description('The deployment configuration for scripts execution tasks')
+//param mcpServerDeploymentConfig deploymentConfigType
 
 param managedIdentityName string
 param appServiceName string
@@ -37,11 +41,12 @@ var tags object = {
 }
 
 var botScriptContent = '''
+set -e;
 git clone $GITHUB_REPOSITORY_URL && \
-cd ada-bot && \
+cd $WORKING_DIRECTORY && \
 git checkout -b $BRANCH_NAME && \
 zip -r app.zip . -x '.*' && \
-az storage blob upload -f app.zip -c data -n app.zip && \
+az storage blob upload -f app.zip -c $CONTAINER_NAME -n ${APP_SERVICE_NAME}_$(date '+%Y%m%d%H%M%S').zip && \
 az webapp deploy --name $APP_SERVICE_NAME --resource-group $RESOURCE_GROUP_NAME --src-path app.zip
 '''
 
@@ -60,7 +65,7 @@ resource defaultAppService 'Microsoft.Web/sites@2024-11-01' existing = {
   name: appServiceName
 }
 
-module defaultManagedIdentity '../../modules/identity.bicep' = {
+module defaultManagedIdentity '../../../modules/identity.bicep' = {
   name: 'deployment-identity-${applicationId}-${environment}'
   scope: defaultRG
   params: {
@@ -75,7 +80,7 @@ module defaultManagedIdentity '../../modules/identity.bicep' = {
   }
 }
 
-module botDeploymentScript '../../modules/deploymentscript.bicep' = {
+module botDeploymentScript '../../../modules/deploymentscript.bicep' = {
   scope: defaultRG
   params: {
     location: location

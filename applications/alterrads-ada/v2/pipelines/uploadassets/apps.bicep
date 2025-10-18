@@ -1,4 +1,4 @@
-import { deploymentConfigType, locationType, envType, provisionerType, storageAccountNameType } from '../../types.bicep'
+import { deploymentConfigType, locationType, envType, provisionerType, storageAccountNameType } from '../../../types.bicep'
 
 targetScope = 'subscription'
 
@@ -50,7 +50,7 @@ resource defaultContainer 'Microsoft.Storage/storageAccounts/blobServices/contai
   name: '${storageAccountName}/default/${containerName}'
 }
 
-module uploadAssetsDeploymentScript '../../modules/deploymentscript.bicep' = {
+module uploadAssetsDeploymentScript '../../../modules/deploymentscript.bicep' = {
   scope: defaultRG
   params: {
     location: location
